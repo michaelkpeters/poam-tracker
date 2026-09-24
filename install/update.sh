@@ -15,6 +15,7 @@ CL='\033[0m'
 
 msg_info() { echo -e "${BL}[INFO]${CL} $1"; }
 msg_ok()   { echo -e "${GN}[OK]${CL} $1"; }
+msg_warn() { echo -e "${YW}[WARN]${CL} $1"; }
 msg_error(){ echo -e "${RD}[ERROR]${CL} $1"; }
 
 echo ""
@@ -31,8 +32,8 @@ else
 fi
 
 msg_info "Rebuilding Docker containers..."
-docker compose down > /dev/null 2>&1
-docker compose up -d --build > /dev/null 2>&1
+docker compose down
+docker compose up -d --build
 msg_ok "Containers rebuilt and restarted"
 
 # Wait for health check
@@ -43,6 +44,7 @@ for i in {1..30}; do
     fi
     sleep 1
 done
+msg_ok "App is responding"
 
 IP=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' 2>&1 || echo "localhost")
 
