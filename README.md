@@ -49,7 +49,7 @@
 Copy and paste this into your **Proxmox host shell**:
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/michaelkpeters/poam-tracker/main/install/poam-tracker.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/michaelkpeters/poam-tracker/master/install/poam-tracker.sh)"
 ```
 
 The script will:
