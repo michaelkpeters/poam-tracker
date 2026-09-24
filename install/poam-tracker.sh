@@ -71,36 +71,46 @@ SSH="no"
 # Prompt for container settings
 # ---------------------------------------------------------------------------
 echo ""
-read -rp "${YW}Container ID (auto-detect if blank):${CL} " CTID
+printf "${YW}Container ID (auto-detect if blank):${CL} "
+read -r CTID
 if [[ -z "$CTID" ]]; then
     # Find next available CTID
     CTID=$(pvesh get /cluster/nextid)
 fi
 
-read -rp "${YW}Container hostname [${HN}]:${CL} " input_hn
+printf "${YW}Container hostname [${HN}]:${CL} "
+read -r input_hn
 [[ -n "$input_hn" ]] && HN="$input_hn"
 
-read -rp "${YW}Disk size (GB) [${DISK_SIZE}]:${CL} " input_disk
+printf "${YW}Disk size (GB) [${DISK_SIZE}]:${CL} "
+read -r input_disk
 [[ -n "$input_disk" ]] && DISK_SIZE="$input_disk"
 
-read -rp "${YW}CPU cores [${CORES}]:${CL} " input_cores
+printf "${YW}CPU cores [${CORES}]:${CL} "
+read -r input_cores
 [[ -n "$input_cores" ]] && CORES="$input_cores"
 
-read -rp "${YW}RAM (MB) [${RAM}]:${CL} " input_ram
+printf "${YW}RAM (MB) [${RAM}]:${CL} "
+read -r input_ram
 [[ -n "$input_ram" ]] && RAM="$input_ram"
 
-read -rp "${YW}Bridge [${BRG}]:${CL} " input_brg
+printf "${YW}Bridge [${BRG}]:${CL} "
+read -r input_brg
 [[ -n "$input_brg" ]] && BRG="$input_brg"
 
-read -rp "${YW}Use DHCP? [Y/n]:${CL} " dhcp_ans
+printf "${YW}Use DHCP? [Y/n]:${CL} "
+read -r dhcp_ans
 if [[ "${dhcp_ans,,}" == "n" ]]; then
-    read -rp "${YW}IP address/CIDR (e.g. 192.168.1.100/24):${CL} " NET
-    read -rp "${YW}Gateway:${CL} " GATE
+    printf "${YW}IP address/CIDR (e.g. 192.168.1.100/24):${CL} "
+    read -r NET
+    printf "${YW}Gateway:${CL} "
+    read -r GATE
 fi
 
-read -rsp "${YW}Root password (leave blank for random):${CL} " PW
-[[ -z "$PW" ]] && PW=$(openssl rand -base64 16)
+printf "${YW}Root password (leave blank for random):${CL} "
+read -rs PW
 echo ""
+[[ -z "$PW" ]] && PW=$(openssl rand -base64 16)
 
 echo ""
 echo -e "${BL}----------------------------------------${CL}"
@@ -113,7 +123,8 @@ echo -e "${BL}  Bridge:       ${CL}$BRG"
 echo -e "${BL}  Network:      ${CL}${NET}"
 echo -e "${BL}----------------------------------------${CL}"
 echo ""
-read -rp "${YW}Proceed with installation? [y/N]:${CL} " confirm
+printf "${YW}Proceed with installation? [y/N]:${CL} "
+read -r confirm
 [[ "${confirm,,}" != "y" ]] && { msg_info "Aborted by user."; exit 0; }
 
 # ---------------------------------------------------------------------------
