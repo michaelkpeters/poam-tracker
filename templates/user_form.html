@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | POAM Tracker{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <div class="page-header">
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.username.label }}
+                    {{ form.username(class="form-control") }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.password.label }}
+                    {{ form.password(class="form-control") }}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.role.label }}
+                    {{ form.role(class="form-control") }}
+                    {% if form.role.errors %}
+                        {% for error in form.role.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('users') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

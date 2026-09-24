@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | POAM Tracker{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <div class="page-header">
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.finding_cve_kev_control.label }}
+                    {{ form.finding_cve_kev_control(class="form-control", rows="3") }}
+                    {% if form.finding_cve_kev_control.errors %}
+                        {% for error in form.finding_cve_kev_control.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="detail-grid">
+                    <div class="form-group">
+                        {{ form.status.label }}
+                        {{ form.status(class="form-control", id="status") }}
+                        {% if form.status.errors %}
+                            {% for error in form.status.errors %}
+                                <div class="form-error">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.criticality_score.label }}
+                        {{ form.criticality_score(class="form-control", step="0.1", min="0", max="10") }}
+                        {% if form.criticality_score.errors %}
+                            {% for error in form.criticality_score.errors %}
+                                <div class="form-error">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.date_made_aware.label }}
+                        {{ form.date_made_aware(class="form-control") }}
+                        {% if form.date_made_aware.errors %}
+                            {% for error in form.date_made_aware.errors %}
+                                <div class="form-error">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group hidden" id="date_resolved_group">
+                        {{ form.date_resolved.label }}
+                        {{ form.date_resolved(class="form-control") }}
+                        {% if form.date_resolved.errors %}
+                            {% for error in form.date_resolved.errors %}
+                                <div class="form-error">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.estimated_resolution_date.label }}
+                        {{ form.estimated_resolution_date(class="form-control", id="estimated_resolution_date") }}
+                        {% if form.estimated_resolution_date.errors %}
+                            {% for error in form.estimated_resolution_date.errors %}
+                                <div class="form-error">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group hidden" id="why_no_estimated_resolution_group">
+                        {{ form.why_no_estimated_resolution.label }}
+                        {{ form.why_no_estimated_resolution(class="form-control", rows="2") }}
+                        {% if form.why_no_estimated_resolution.errors %}
+                            {% for error in form.why_no_estimated_resolution.errors %}
+                                <div class="form-error">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.systems_impacted.label }}
+                    {{ form.systems_impacted(class="form-control", rows="2") }}
+                    {% if form.systems_impacted.errors %}
+                        {% for error in form.systems_impacted.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.background.label }}
+                    {{ form.background(class="form-control", rows="4") }}
+                    {% if form.background.errors %}
+                        {% for error in form.background.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.mitigating_factors.label }}
+                    {{ form.mitigating_factors(class="form-control", rows="3") }}
+                    {% if form.mitigating_factors.errors %}
+                        {% for error in form.mitigating_factors.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

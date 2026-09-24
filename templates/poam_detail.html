@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poam.poam_number }} | POAM Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 style="display: flex; align-items: center; gap: 0.75rem;">
+                {{ poam.poam_number }}
+                <span class="badge {{ poam.status_badge_class() }}">{{ poam.status_label() }}</span>
+            </h1>
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.25rem;">
+                Created {{ poam.created_at.strftime('%Y-%m-%d %H:%M') }} by {{ poam.creator.username }}
+                {% if poam.updated_at != poam.created_at %}
+                &middot; Updated {{ poam.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                {% endif %}
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            {% if current_user.can_edit_poams() %}
+            <a href="{{ url_for('poam_edit', poam_id=poam.id) }}" class="btn btn-secondary">Edit</a>
+            {% endif %}
+            {% if current_user.is_admin() %}
+            <form method="POST" action="{{ url_for('poam_delete', poam_id=poam.id) }}" class="delete-form" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- POAM Details -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Finding / CVE / KEV / Control</label>
+                    <div class="value"><pre>{{ poam.finding_cve_kev_control }}</pre></div>
+                </div>
+
+                <div class="detail-item">
+                    <label>Internal Criticality Score</label>
+                    <div class="value">
+                        <div class="score-display">
+                            <span style="font-size: 1.25rem; font-weight: 700;">{{ "%.1f"|format(poam.criticality_score) }}</span>
+                            <span>out of 10.0</span>
+                            <div class="score-bar" style="width: 120px; height: 10px;">
+                                <div class="score-fill {% if poam.criticality_score >= 7 %}high{% elif poam.criticality_score >= 4 %}medium{% endif %}" style="width: {{ poam.criticality_score * 10 }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <label>Date Made Aware</label>
+                    <div class="value">{{ poam.date_made_aware.strftime('%Y-%m-%d') if poam.date_made_aware else '-' }}</div>
+                </div>
+
+                {% if poam.status == 'resolved' %}
+                <div class="detail-item">
+                    <label>Date Resolved</label>
+                    <div class="value">{{ poam.date_resolved.strftime('%Y-%m-%d') if poam.date_resolved else '-' }}</div>
+                </div>
+                {% endif %}
+
+                <div class="detail-item">
+                    <label>System(s) Impacted</label>
+                    <div class="value"><pre>{{ poam.systems_impacted }}</pre></div>
+                </div>
+
+                <div class="detail-item">
+                    <label>Estimated Resolution Date</label>
+                    <div class="value">
+                        {% if poam.estimated_resolution_date %}
+                            {{ poam.estimated_resolution_date.strftime('%Y-%m-%d') }}
+                            {% if poam.is_overdue() %}
+                                <span class="badge badge-danger" style="background: #fee2e2; color: #991b1b; margin-left: 0.5rem;">Overdue</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: var(--text-light);">Not set</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if not poam.estimated_resolution_date and poam.why_no_estimated_resolution %}
+                <div class="detail-item full-width">
+                    <label>Why No Estimated Resolution Date?</label>
+                    <div class="value"><pre>{{ poam.why_no_estimated_resolution }}</pre></div>
+                </div>
+                {% endif %}
+
+                <div class="detail-item full-width">
+                    <label>Background of the Finding</label>
+                    <div class="value"><pre>{{ poam.background }}</pre></div>
+                </div>
+
+                {% if poam.mitigating_factors %}
+                <div class="detail-item full-width">
+                    <label>Mitigating Factors</label>
+                    <div class="value"><pre>{{ poam.mitigating_factors }}</pre></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+        <!-- Updates Section -->
+        <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h2>Updates</h2>
+                </div>
+                <div class="card-body">
+                    {% if current_user.can_edit_poams() %}
+                    <form method="POST" action="{{ url_for('poam_add_update', poam_id=poam.id) }}" style="margin-bottom: 1.5rem;">
+                        {{ update_form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ update_form.update_text(class="form-control", rows="3", placeholder="Add a status update...") }}
+                            {% if update_form.update_text.errors %}
+                                {% for error in update_form.update_text.errors %}
+                                    <div class="form-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        {{ update_form.submit(class="btn btn-sm btn-primary") }}
+                    </form>
+                    {% endif %}
+
+                    <div class="updates-list">
+                        {% for update in poam.updates %}
+                        <div class="update-item">
+                            <div class="update-text">{{ update.update_text }}</div>
+                            <div class="update-meta">
+                                By {{ update.author.username }} on {{ update.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% if current_user.is_admin() %}
+                                <form method="POST" action="{{ url_for('update_delete', update_id=update.id) }}" class="delete-form" style="display: inline; margin-left: 0.5rem;">
+                                    <button type="submit" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.8rem;">delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <p style="color: var(--text-light); font-size: 0.9rem;">No updates yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evidence Section -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Evidence</h2>
+                </div>
+                <div class="card-body">
+                    {% if current_user.can_upload_evidence() %}
+                    <form method="POST" action="{{ url_for('poam_add_evidence', poam_id=poam.id) }}" enctype="multipart/form-data" style="margin-bottom: 1.5rem;">
+                        {{ evidence_form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ evidence_form.note(class="form-control", rows="2", placeholder="Add a note...") }}
+                        </div>
+                        <div class="form-group">
+                            {{ evidence_form.file(class="form-control") }}
+                        </div>
+                        {{ evidence_form.submit(class="btn btn-sm btn-primary") }}
+                    </form>
+                    {% endif %}
+
+                    <div class="evidence-list">
+                        {% for ev in poam.evidence_items %}
+                        <div class="evidence-item">
+                            <div class="evidence-icon">
+                                {% if ev.file_name %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                {% else %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <div class="evidence-meta">
+                                {% if ev.file_name %}
+                                <div class="filename">
+                                    <a href="{{ url_for('uploaded_file', filename=ev.file_path.split('/')[-1]) }}" target="_blank">{{ ev.file_name }}</a>
+                                </div>
+                                {% endif %}
+                                {% if ev.note %}
+                                <div class="note">{{ ev.note }}</div>
+                                {% endif %}
+                                <div class="byline">By {{ ev.uploader.username }} on {{ ev.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                            {% if current_user.is_admin() %}
+                            <form method="POST" action="{{ url_for('evidence_delete', evidence_id=ev.id) }}" class="delete-form">
+                                <button type="submit" style="background: none; border: none; color: var(--danger); cursor: pointer;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <p style="color: var(--text-light); font-size: 0.9rem;">No evidence yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

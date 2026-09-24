@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | POAM Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Plans of Action and Milestones</h1>
+        {% if current_user.can_edit_poams() %}
+        <a href="{{ url_for('poam_new') }}" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New POAM
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('dashboard') }}" class="filter-bar">
+                <select name="status" class="form-control" onchange="this.form.submit()">
+                    <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+                    <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+                    <option value="inprocess" {% if status_filter == 'inprocess' %}selected{% endif %}>In Process</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+                <input type="text" name="search" class="form-control" placeholder="Search POAMs..." value="{{ search }}">
+                <button type="submit" class="btn btn-secondary">Search</button>
+                {% if status_filter or search %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>POAM #</th>
+                        <th>Finding / CVE / KEV / Control</th>
+                        <th>Status</th>
+                        <th>Criticality</th>
+                        <th>Date Aware</th>
+                        <th>Est. Resolution</th>
+                        <th>Systems</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for poam in poams %}
+                    <tr>
+                        <td><strong>{{ poam.poam_number }}</strong></td>
+                        <td>{{ poam.finding_cve_kev_control[:80] }}{% if poam.finding_cve_kev_control|length > 80 %}...{% endif %}</td>
+                        <td><span class="badge {{ poam.status_badge_class() }}">{{ poam.status_label() }}</span></td>
+                        <td>
+                            <div class="score-display">
+                                <span>{{ "%.1f"|format(poam.criticality_score) }}</span>
+                                <div class="score-bar">
+                                    <div class="score-fill {% if poam.criticality_score >= 7 %}high{% elif poam.criticality_score >= 4 %}medium{% endif %}" style="width: {{ poam.criticality_score * 10 }}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ poam.date_made_aware.strftime('%Y-%m-%d') if poam.date_made_aware else '-' }}</td>
+                        <td>
+                            {% if poam.estimated_resolution_date %}
+                                {% if poam.is_overdue() %}
+                                    <span style="color: var(--danger); font-weight: 600;">{{ poam.estimated_resolution_date.strftime('%Y-%m-%d') }}</span>
+                                {% else %}
+                                    {{ poam.estimated_resolution_date.strftime('%Y-%m-%d') }}
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-light);">&mdash;</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ poam.systems_impacted[:50] }}{% if poam.systems_impacted|length > 50 %}...{% endif %}</td>
+                        <td>
+                            <a href="{{ url_for('poam_detail', poam_id=poam.id) }}" class="btn btn-sm btn-outline">View</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                            No POAMs found.
+                            {% if current_user.can_edit_poams() %}
+                            <a href="{{ url_for('poam_new') }}">Create one now</a>.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

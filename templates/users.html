@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}User Management | POAM Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>User Management</h1>
+        <a href="{{ url_for('user_new') }}" class="btn btn-primary">New User</a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td><strong>{{ user.username }}</strong>{% if user.id == current_user.id %} <span style="color: var(--text-light);">(you)</span>{% endif %}</td>
+                        <td><span class="badge badge-{{ user.role }}">{{ user.role.replace('_', ' ') }}</span></td>
+                        <td>
+                            {% if user.active %}
+                                <span style="color: var(--success);">&#9679; Active</span>
+                            {% else %}
+                                <span style="color: var(--danger);">&#9675; Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <form method="POST" action="{{ url_for('user_toggle', user_id=user.id) }}" class="delete-form" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm {% if user.active %}btn-outline{% else %}btn-success{% endif %}">
+                                        {% if user.active %}Disable{% else %}Enable{% endif %}
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('user_reset_password', user_id=user.id) }}" style="display: inline;">
+                                    <input type="password" name="new_password" placeholder="New password" class="form-control" style="width: 140px; display: inline-block; padding: 0.35rem 0.5rem; font-size: 0.8rem;" required>
+                                    <button type="submit" class="btn btn-sm btn-secondary">Reset</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
