@@ -7,11 +7,11 @@ set -e
 APP="POAM Tracker"
 APP_DIR="/opt/poam-tracker"
 
-RD='\033[0;31m'
-GN='\033[0;32m'
-YW='\033[0;33m'
-BL='\033[0;34m'
-CL='\033[0m'
+RD=$'\033[0;31m'
+GN=$'\033[0;32m'
+YW=$'\033[0;33m'
+BL=$'\033[0;34m'
+CL=$'\033[0m'
 
 msg_info() { echo -e "${BL}[INFO]${CL} $1"; }
 msg_ok()   { echo -e "${GN}[OK]${CL} $1"; }
